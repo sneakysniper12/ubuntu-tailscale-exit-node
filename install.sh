@@ -3,23 +3,38 @@ set -e
 
 echo "=== Ubuntu Tailscale Exit Node Installer ==="
 
-# Load config
 source ./config.env
 
-echo "[1/4] Installing Tailscale..."
+# ==============================
+# PROMPT FOR KEYS IF NOT SET
+# ==============================
+
+if [ -z "$TAILSCALE_AUTH_KEY" ]; then
+  read -p "Enter Tailscale AUTH KEY: " TAILSCALE_AUTH_KEY
+fi
+
+if [ -z "$TAILSCALE_API_KEY" ]; then
+  read -p "Enter Tailscale API KEY: " TAILSCALE_API_KEY
+fi
+
+if [ -z "$TAILSCALE_TAILNET" ]; then
+  read -p "Enter your Tailnet name (example: yourname.github): " TAILSCALE_TAILNET
+fi
+
+echo "[1/5] Installing Tailscale..."
 bash scripts/install_tailscale.sh
 
-echo "[2/4] Configuring system..."
+echo "[2/5] Configuring system..."
 bash scripts/configure_exit_node.sh
 
-echo "[3/4] Enabling Tailscale SSH..."
+echo "[3/5] Enabling Tailscale SSH..."
 if [ "$ENABLE_TAILSCALE_SSH" = "true" ]; then
   bash scripts/enable_tailscale_ssh.sh
 fi
 
-echo "[4/4] Bringing Tailscale online..."
+echo "[4/5] Bringing Tailscale online..."
 
-TAILSCALE_CMD="sudo tailscale up --advertise-tags=$TAGS"
+TAILSCALE_CMD="sudo tailscale up --authkey=$TAILSCALE_AUTH_KEY --advertise-tags=$TAGS"
 
 if [ "$ADVERTISE_EXIT_NODE" = "true" ]; then
   TAILSCALE_CMD="$TAILSCALE_CMD --advertise-exit-node"
@@ -31,6 +46,7 @@ fi
 
 eval $TAILSCALE_CMD
 
-echo "=== DONE ==="
-echo "Authorize device at: https://login.tailscale.com/admin/machines"
+echo "[5/5] Auto-enabling exit node via API..."
+bash scripts/auto_enable_exit_node.sh "$TAILSCALE_API_KEY" "$TAILSCALE_TAILNET"
 
+echo "=== DONE ==="
