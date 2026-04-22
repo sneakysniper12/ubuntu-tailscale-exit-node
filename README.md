@@ -12,7 +12,7 @@ This project turns an Ubuntu system into:
 ## Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/ubuntu-tailscale-exit-node.git
+git clone https://github.com/sneakysniper12/ubuntu-tailscale-exit-node.git
 cd ubuntu-tailscale-exit-node
 chmod +x install.sh
 ./install.sh
